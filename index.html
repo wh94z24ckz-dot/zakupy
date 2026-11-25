@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Lista Zakupów</title>
+  <meta name="theme-color" content="#0f1115" />
+  <style>
+    :root {
+      --bg: #0f1115;
+      --surface: #181b22;
+      --surface-hover: #222630;
+      --border: #2a2f3d;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent: #3b82f6;
+      --accent-kuba: #3b82f6;
+      --accent-mama: #ec4899;
+      --accent-tata: #10b981;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding-bottom: 40px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 4px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .status-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      background: var(--surface);
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--danger);
+    }
+
+    .dot.online {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .user-switch {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: var(--surface);
+      padding: 6px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+
+    .user-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 10px 6px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .user-btn.active[data-user="Kuba"] {
+      background: var(--accent-kuba);
+      color: #fff;
+    }
+
+    .user-btn.active[data-user="Mama"] {
+      background: var(--accent-mama);
+      color: #fff;
+    }
+
+    .user-btn.active[data-user="Tata"] {
+      background: var(--accent-tata);
+      color: #fff;
+    }
+
+    .add-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+    }
+
+    .qty-input {
+      width: 84px;
+      flex: none !important;
+      text-align: center;
+    }
+
+    .bottom-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    select {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .add-btn {
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .add-btn:active {
+      transform: scale(0.97);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .section-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .clear-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .clear-btn:hover {
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      border-radius: 14px;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+
+    .item.bought {
+      opacity: 0.45;
+    }
+
+    .checkbox {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+
+    .item.bought .checkbox {
+      background: var(--success);
+      border-color: var(--success);
+    }
+
+    .checkbox svg {
+      width: 15px;
+      height: 15px;
+      stroke: #fff;
+      stroke-width: 3;
+      fill: none;
+      opacity: 0;
+    }
+
+    .item.bought .checkbox svg {
+      opacity: 1;
+    }
+
+    .item-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .item-top {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .item-name {
+      font-size: 1rem;
+      font-weight: 600;
+      word-break: break-word;
+    }
+
+    .item.bought .item-name {
+      text-decoration: line-through;
+    }
+
+    .item-qty {
+      font-size: 0.85rem;
+      color: var(--accent);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .item-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .badge {
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.7rem;
+    }
+
+    .badge.Kuba {
+      background: rgba(59, 130, 246, 0.18);
+      color: #60a5fa;
+    }
+
+    .badge.Mama {
+      background: rgba(236, 72, 153, 0.18);
+      color: #f472b6;
+    }
+
+    .badge.Tata {
+      background: rgba(16, 185, 129, 0.18);
+      color: #34d399;
+    }
+
+    .del-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      padding: 4px 8px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .del-btn:hover {
+      color: var(--danger);
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      padding: 24px 0;
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>🛒 Lista zakupów</h1>
+      <div class="status-dot">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">Łączenie...</span>
+      </div>
+    </header>
+
+    <div class="user-switch">
+      <button class="user-btn active" data-user="Kuba">Kuba</button>
+      <button class="user-btn" data-user="Mama">Mama</button>
+      <button class="user-btn" data-user="Tata">Tata</button>
+    </div>
+
+    <form class="add-box" id="addForm">
+      <div class="input-row">
+        <input type="text" id="itemInput" placeholder="Co trzeba kupić?" required autocomplete="off" />
+        <input type="text" id="qtyInput" class="qty-input" placeholder="Ilość" autocomplete="off" />
+      </div>
+      <div class="bottom-row">
+        <select id="catSelect">
+          <option value="🥬 Warzywa i owoce">🥬 Warzywa i owoce</option>
+          <option value="🥩 Mięso i nabiał">🥩 Mięso i nabiał</option>
+          <option value="🍞 Pieczywo">🍞 Pieczywo</option>
+          <option value="🥫 Suche i przyprawy">🥫 Suche i przyprawy</option>
+          <option value="🧴 Chemia i inne">🧴 Chemia i inne</option>
+        </select>
+        <button type="submit" class="add-btn">+ Dodaj</button>
+      </div>
+    </form>
+
+    <div class="section-header">
+      <span class="section-title" id="todoCount">Do kupienia (0)</span>
+    </div>
+    <div class="list" id="todoList"></div>
+
+    <div class="section-header" id="boughtHeader" style="display:none;">
+      <span class="section-title" id="boughtCount">W koszyku (0)</span>
+      <button class="clear-btn" id="clearBoughtBtn">Usuń kupione</button>
+    </div>
+    <div class="list" id="boughtList"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, onSnapshot,
+      doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDGmosF7qF_ARD8H5BBXd8UtdxWU0tTr7k",
+      authDomain: "lista-zakupow-85b40.firebaseapp.com",
+      projectId: "lista-zakupow-85b40",
+      storageBucket: "lista-zakupow-85b40.firebasestorage.app",
+      messagingSenderId: "1007749232847",
+      appId: "1:1007749232847:web:2bd4d25161d4699d489fba"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const itemsRef = collection(db, "shopping_list");
+
+    let currentUser = localStorage.getItem("shopping_user") || "Kuba";
+    const userBtns = document.querySelectorAll(".user-btn");
+
+    function updateUserUI() {
+      userBtns.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.user === currentUser);
+      });
+    }
+    updateUserUI();
+
+    userBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentUser = btn.dataset.user;
+        localStorage.setItem("shopping_user", currentUser);
+        updateUserUI();
+      });
+    });
+
+    const addForm = document.getElementById("addForm");
+    const itemInput = document.getElementById("itemInput");
+    const qtyInput = document.getElementById("qtyInput");
+    const catSelect = document.getElementById("catSelect");
+
+    addForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = itemInput.value.trim();
+      if (!name) return;
+
+      const qty = qtyInput.value.trim();
+      const category = catSelect.value;
+
+      itemInput.value = "";
+      qtyInput.value = "";
+
+      await addDoc(itemsRef, {
+        name,
+        qty,
+        category,
+        addedBy: currentUser,
+        bought: false,
+        createdAt: serverTimestamp()
+      });
+    });
+
+    const todoList = document.getElementById("todoList");
+    const boughtList = document.getElementById("boughtList");
+    const todoCount = document.getElementById("todoCount");
+    const boughtCount = document.getElementById("boughtCount");
+    const boughtHeader = document.getElementById("boughtHeader");
+    const statusDot = document.getElementById("statusDot");
+    const statusText = document.getElementById("statusText");
+
+    let boughtIds = [];
+
+    const q = query(itemsRef, orderBy("createdAt", "desc"));
+    onSnapshot(q, (snapshot) => {
+      statusDot.classList.add("online");
+      statusText.textContent = "Na żywo";
+
+      const todos = [];
+      const boughts = [];
+      boughtIds = [];
+
+      snapshot.forEach((docSnap) => {
+        const data = { id: docSnap.id, ...docSnap.data() };
+        if (data.bought) {
+          boughts.push(data);
+          boughtIds.push(data.id);
+        } else {
+          todos.push(data);
+        }
+      });
+
+      todos.sort((a, b) => a.category.localeCompare(b.category));
+
+      todoCount.textContent = `Do kupienia (${todos.length})`;
+      boughtCount.textContent = `W koszyku (${boughts.length})`;
+      boughtHeader.style.display = boughts.length > 0 ? "flex" : "none";
+
+      renderList(todoList, todos, "Lista jest pusta — dopisz coś powyżej!");
+      renderList(boughtList, boughts, "");
+    }, (err) => {
+      statusDot.classList.remove("online");
+      statusText.textContent = "Błąd bazy";
+      console.error(err);
+    });
+
+    function renderList(container, items, emptyMsg) {
+      container.innerHTML = "";
+      if (items.length === 0 && emptyMsg) {
+        container.innerHTML = `<div class="empty">${emptyMsg}</div>`;
+        return;
+      }
+
+      items.forEach((item) => {
+        const el = document.createElement("div");
+        el.className = `item ${item.bought ? "bought" : ""}`;
+        el.innerHTML = `
+          <div class="checkbox">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div class="item-content">
+            <div class="item-top">
+              <span class="item-name">${escapeHtml(item.name)}</span>
+              ${item.qty ? `<span class="item-qty">(${escapeHtml(item.qty)})</span>` : ""}
+            </div>
+            <div class="item-meta">
+              <span class="badge ${item.addedBy}">${item.addedBy}</span>
+              <span>${item.category}</span>
+            </div>
+          </div>
+          <button class="del-btn" title="Usuń">&times;</button>
+        `;
+
+        el.querySelector(".checkbox").addEventListener("click", () => {
+          updateDoc(doc(db, "shopping_list", item.id), { bought: !item.bought });
+        });
+
+        el.querySelector(".del-btn").addEventListener("click", () => {
+          deleteDoc(doc(db, "shopping_list", item.id));
+        });
+
+        container.appendChild(el);
+      });
+    }
+
+    document.getElementById("clearBoughtBtn").addEventListener("click", async () => {
+      await Promise.all(boughtIds.map(id => deleteDoc(doc(db, "shopping_list", id))));
+    });
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[m]));
+    }
+  </script>
+</body>
+</html>
